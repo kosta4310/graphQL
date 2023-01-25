@@ -1,5 +1,5 @@
-import * as lodash from 'lodash';
-import { NoRequiredEntity } from '../errors/NoRequireEntity.error';
+import * as lodash from "lodash";
+import { NoRequiredEntity } from "../errors/NoRequireEntity.error";
 
 type UnpackArray<T> = T extends (infer R)[] ? R : never;
 interface Options<T, K extends keyof T> {
@@ -10,16 +10,16 @@ interface Options<T, K extends keyof T> {
   inArrayAnyOf?: UnpackArray<T[K]> extends never ? never : UnpackArray<T[K]>[];
 }
 type OptionsEquals<T, K extends keyof T> = Required<
-  Pick<Options<T, K>, 'key' | 'equals'>
+  Pick<Options<T, K>, "key" | "equals">
 >;
 type OptionsEqualsAnyOf<T, K extends keyof T> = Required<
-  Pick<Options<T, K>, 'key' | 'equalsAnyOf'>
+  Pick<Options<T, K>, "key" | "equalsAnyOf">
 >;
 type OptionsInArray<T, K extends keyof T> = Required<
-  Pick<Options<T, K>, 'key' | 'inArray'>
+  Pick<Options<T, K>, "key" | "inArray">
 >;
 type OptionsInArrayAnyOf<T, K extends keyof T> = Required<
-  Pick<Options<T, K>, 'key' | 'inArrayAnyOf'>
+  Pick<Options<T, K>, "key" | "inArrayAnyOf">
 >;
 
 export default abstract class DBEntity<
@@ -102,7 +102,7 @@ export default abstract class DBEntity<
 
   async delete(id: string): Promise<Entity> {
     const idx = this.entities.findIndex((entity) => entity.id === id);
-    if (idx === -1) throw new NoRequiredEntity('delete');
+    if (idx === -1) throw new NoRequiredEntity("delete");
     const deleted = this.entities[idx];
     this.entities.splice(idx, 1);
     return deleted;
@@ -110,7 +110,7 @@ export default abstract class DBEntity<
 
   async change(id: string, changeDTO: ChangeDTO): Promise<Entity> {
     const idx = this.entities.findIndex((entity) => entity.id === id);
-    if (idx === -1) throw new NoRequiredEntity('change');
+    if (idx === -1) throw new NoRequiredEntity("change");
     const changed = { ...this.entities[idx], ...changeDTO };
     this.entities.splice(idx, 1, changed);
     return changed;

@@ -1,5 +1,5 @@
-import * as crypto from 'node:crypto';
-import DBEntity from './DBEntity';
+import * as crypto from "node:crypto";
+import DBEntity from "./DBEntity";
 
 export type PostEntity = {
   id: string;
@@ -7,8 +7,8 @@ export type PostEntity = {
   content: string;
   userId: string;
 };
-type CreatePostDTO = Omit<PostEntity, 'id'>;
-type ChangePostDTO = Partial<Omit<PostEntity, 'id' | 'userId'>>;
+type CreatePostDTO = Omit<PostEntity, "id">;
+type ChangePostDTO = Partial<Omit<PostEntity, "id" | "userId">>;
 
 export default class DBPosts extends DBEntity<
   PostEntity,

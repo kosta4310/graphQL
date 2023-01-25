@@ -1,5 +1,5 @@
-import * as crypto from 'node:crypto';
-import DBEntity from './DBEntity';
+import * as crypto from "node:crypto";
+import DBEntity from "./DBEntity";
 
 export type ProfileEntity = {
   id: string;
@@ -12,8 +12,8 @@ export type ProfileEntity = {
   memberTypeId: string;
   userId: string;
 };
-type CreateProfileDTO = Omit<ProfileEntity, 'id'>;
-type ChangeProfileDTO = Partial<Omit<ProfileEntity, 'id' | 'userId'>>;
+type CreateProfileDTO = Omit<ProfileEntity, "id">;
+type ChangeProfileDTO = Partial<Omit<ProfileEntity, "id" | "userId">>;
 
 export default class DBProfiles extends DBEntity<
   ProfileEntity,
