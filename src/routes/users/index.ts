@@ -23,12 +23,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       },
     },
     async function (request, reply): Promise<UserEntity | HttpError> {
-      // const reg = /^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$/;
       const userId = request.params.id;
-
-      // if (!userId.match(reg)) {
-      //   return fastify.httpErrors.badRequest();
-      // }
 
       const res = await fastify.db.users.findOne({
         key: "id",
@@ -84,6 +79,24 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
           subscribedToUserIds: newArray,
         });
       });
+
+      const posts = await fastify.db.posts.findMany({
+        key: "userId",
+        equals: userId,
+      });
+
+      posts.forEach(async (post) => {
+        await fastify.db.posts.delete(post.id);
+      });
+
+      const profile = await fastify.db.profiles.findOne({
+        key: "userId",
+        equals: userId,
+      });
+
+      if (profile) {
+        await fastify.db.profiles.delete(profile.id);
+      }
 
       return await fastify.db.users.delete(userId);
     }
