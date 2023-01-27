@@ -32,15 +32,6 @@ export const ProfilesType = new GraphQLObjectType({
     city: { type: GraphQLString },
     memberTypeId: { type: GraphQLString },
     userId: { type: GraphQLID },
-    // user: {
-    //   type: UserType,
-    //   resolve: async (source, args, context: FastifyInstance) => {
-    //     return await context.db.users.findOne({
-    //       key: "id",
-    //       equals: source.userId,
-    //     });
-    //   },
-    // },
   }),
 });
 
@@ -51,5 +42,14 @@ export const PostType = new GraphQLObjectType({
     title: { type: GraphQLString },
     content: { type: GraphQLString },
     userId: { type: GraphQLString },
+  }),
+});
+
+export const MemberTypesType = new GraphQLObjectType({
+  name: "MemberTypes",
+  fields: () => ({
+    id: { type: GraphQLString },
+    discount: { type: GraphQLInt },
+    monthPostsLimit: { type: GraphQLInt },
   }),
 });

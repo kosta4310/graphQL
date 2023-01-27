@@ -1,21 +1,16 @@
-// import { HttpError } from "@fastify/sensible/lib/httpError";
 import { FastifyPluginAsyncJsonSchemaToTs } from "@fastify/type-provider-json-schema-to-ts";
-// import { FastifyInstance } from "fastify";
-// import { User } from "./data/types";
-import { user, users, posts, post, profiles } from "./data/query";
-import { createUser, createProfiles } from "./data/mutation";
 import {
-  graphql,
-  // GraphQLFieldResolver,
-  // GraphQLID,
-  // GraphQLInt,
-  // GraphQLList,
-  GraphQLObjectType,
-  GraphQLSchema,
-  // GraphQLString,
-} from "graphql";
-// import { ProfileEntity } from "../../utils/DB/entities/DBProfiles";
-// import { UserEntity } from "../../utils/DB/entities/DBUsers";
+  user,
+  users,
+  posts,
+  post,
+  profile,
+  memberType,
+  profiles,
+  memberTypes,
+} from "./data/query";
+import { createUser, createProfiles } from "./data/mutation";
+import { graphql, GraphQLObjectType, GraphQLSchema } from "graphql";
 import { graphqlBodySchema } from "./schema";
 
 // curl -X POST \
@@ -27,9 +22,12 @@ const Query = new GraphQLObjectType({
   fields: () => ({
     users: users,
     user: user,
-    posts: posts,
-    post: post,
-    profiles: profiles,
+    posts,
+    post,
+    profile,
+    profiles,
+    memberType,
+    memberTypes,
   }),
 });
 
