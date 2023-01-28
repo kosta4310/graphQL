@@ -24,11 +24,19 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
     email: { type: GraphQLString },
     id: { type: GraphQLID },
     subscribedToUserIds: { type: new GraphQLList(GraphQLID) },
-    sub: { type: UserType },
     profile: {
       type: ProfilesType,
       resolve: async (source: UserEntity, args, context: FastifyInstance) => {
         return await context.db.profiles.findOne({
+          key: "userId",
+          equals: source.id,
+        });
+      },
+    },
+    posts: {
+      type: new GraphQLList(PostType),
+      resolve: async (source: UserEntity, args, context: FastifyInstance) => {
+        return await context.db.posts.findMany({
           key: "userId",
           equals: source.id,
         });
@@ -90,13 +98,13 @@ export const ProfilesType: GraphQLOutputType = new GraphQLObjectType({
 export const ProfilesTypeInput = new GraphQLInputObjectType({
   name: "ProfilesInput",
   fields: {
-    avatar: { type: new GraphQLNonNull(GraphQLString) },
-    sex: { type: new GraphQLNonNull(GraphQLString) },
-    birthday: { type: new GraphQLNonNull(GraphQLInt) },
-    country: { type: new GraphQLNonNull(GraphQLString) },
-    street: { type: new GraphQLNonNull(GraphQLString) },
-    city: { type: new GraphQLNonNull(GraphQLString) },
-    memberTypeId: { type: new GraphQLNonNull(GraphQLString) },
+    avatar: { type: GraphQLString },
+    sex: { type: GraphQLString },
+    birthday: { type: GraphQLInt },
+    country: { type: GraphQLString },
+    street: { type: GraphQLString },
+    city: { type: GraphQLString },
+    memberTypeId: { type: GraphQLString },
     userId: { type: new GraphQLNonNull(GraphQLID) },
   },
 });
@@ -118,6 +126,15 @@ export const PostType: GraphQLOutputType = new GraphQLObjectType({
       },
     },
   }),
+});
+
+export const PostTypeInput = new GraphQLInputObjectType({
+  name: "PostInput",
+  fields: {
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+    userId: { type: new GraphQLNonNull(GraphQLID) },
+  },
 });
 
 export const MemberTypesType = new GraphQLObjectType({

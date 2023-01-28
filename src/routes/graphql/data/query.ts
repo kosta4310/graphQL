@@ -43,6 +43,7 @@ export const posts = {
 
 export const post = {
   type: PostType,
+  args: { id: { type: GraphQLID } },
   resolve: async (
     _source: any,
     args: { id: string },
