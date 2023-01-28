@@ -1,6 +1,6 @@
 import { MemberTypesType, PostType, ProfilesType, UserType } from "./types";
 import { FastifyInstance } from "fastify";
-import { GraphQLID, GraphQLList, GraphQLString } from "graphql";
+import { GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql";
 import { UserEntity } from "../../../utils/DB/entities/DBUsers";
 import { HttpError } from "@fastify/sensible/lib/httpError";
 
@@ -14,7 +14,7 @@ export const users = {
 export const user = {
   type: UserType,
   args: {
-    id: { type: GraphQLID },
+    id: { type: new GraphQLNonNull(GraphQLID) },
   },
   resolve: async (
     _source: any,
@@ -43,7 +43,7 @@ export const posts = {
 
 export const post = {
   type: PostType,
-  args: { id: { type: GraphQLID } },
+  args: { id: { type: new GraphQLNonNull(GraphQLID) } },
   resolve: async (
     _source: any,
     args: { id: string },
@@ -71,7 +71,7 @@ export const profiles = {
 export const profile = {
   type: ProfilesType,
   args: {
-    id: { type: GraphQLID },
+    id: { type: new GraphQLNonNull(GraphQLID) },
   },
   resolve: async (
     _source: any,
@@ -93,7 +93,7 @@ export const profile = {
 export const memberType = {
   type: MemberTypesType,
   args: {
-    id: { type: GraphQLString },
+    id: { type: new GraphQLNonNull(GraphQLString) },
   },
   resolve: async (
     _source: any,

@@ -24,6 +24,15 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
     email: { type: GraphQLString },
     id: { type: GraphQLID },
     subscribedToUserIds: { type: new GraphQLList(GraphQLID) },
+    userSubscribedTo: {
+      type: new GraphQLList(UserType),
+      resolve: async (source: UserEntity, args, context: FastifyInstance) => {
+        return await context.db.users.findMany({
+          key: "subscribedToUserIds",
+          inArray: source.id,
+        });
+      },
+    },
     profile: {
       type: ProfilesType,
       resolve: async (source: UserEntity, args, context: FastifyInstance) => {
