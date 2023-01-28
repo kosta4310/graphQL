@@ -1,8 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { GraphQLID, GraphQLInt, GraphQLString } from "graphql";
+import { CreatePostDTO } from "../../../utils/DB/entities/DBPosts";
 import { CreateProfileDTO } from "../../../utils/DB/entities/DBProfiles";
 import { CreateUserDTO } from "../../../utils/DB/entities/DBUsers";
-import { ProfilesType, UserType } from "./types";
+import { PostType, ProfilesType, UserType } from "./types";
 
 export const createUser = {
   type: UserType,
@@ -17,6 +18,31 @@ export const createUser = {
     context: FastifyInstance
   ) => {
     return await context.db.users.create(args);
+  },
+};
+
+export const createPost = {
+  type: PostType,
+  args: {
+    id: { type: GraphQLID },
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+    userId: { type: GraphQLID },
+  },
+  resolve: async (
+    _source: any,
+    args: CreatePostDTO,
+    context: FastifyInstance
+  ) => {
+    const user = await context.db.users.findOne({
+      key: "id",
+      equals: args.userId,
+    });
+
+    if (!user) {
+      return context.httpErrors.badRequest();
+    }
+    return await context.db.posts.create(args);
   },
 };
 

@@ -9,7 +9,7 @@ import {
   profiles,
   memberTypes,
 } from "./data/query";
-import { createUser, createProfiles } from "./data/mutation";
+import { createUser, createProfiles, createPost } from "./data/mutation";
 import { graphql, GraphQLObjectType, GraphQLSchema } from "graphql";
 import { graphqlBodySchema } from "./schema";
 
@@ -20,8 +20,8 @@ import { graphqlBodySchema } from "./schema";
 const Query = new GraphQLObjectType({
   name: "Query",
   fields: () => ({
-    users: users,
-    user: user,
+    users,
+    user,
     posts,
     post,
     profile,
@@ -34,8 +34,9 @@ const Query = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
   fields: () => ({
-    createUser: createUser,
-    createProfiles: createProfiles,
+    createUser,
+    createProfiles,
+    createPost,
   }),
 });
 

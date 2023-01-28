@@ -1,4 +1,5 @@
 // import { FastifyInstance } from "fastify";
+import { FastifyInstance } from "fastify";
 import {
   //   graphql,
   GraphQLID,
@@ -17,6 +18,15 @@ export const UserType = new GraphQLObjectType({
     email: { type: GraphQLString },
     id: { type: GraphQLID },
     subscribedToUserIds: { type: new GraphQLList(GraphQLID) },
+    profile: {
+      type: ProfilesType,
+      resolve: async (source, args, context: FastifyInstance) => {
+        return await context.db.profiles.findOne({
+          key: "userId",
+          equals: source.id,
+        });
+      },
+    },
   }),
 });
 
