@@ -1,23 +1,23 @@
 import { FastifyInstance } from "fastify";
-import { GraphQLID, GraphQLInt, GraphQLString } from "graphql";
+import { GraphQLID, GraphQLNonNull, GraphQLString } from "graphql";
 import { CreatePostDTO } from "../../../utils/DB/entities/DBPosts";
 import { CreateProfileDTO } from "../../../utils/DB/entities/DBProfiles";
-import { CreateUserDTO } from "../../../utils/DB/entities/DBUsers";
-import { PostType, ProfilesType, UserType } from "./types";
+import {
+  PostType,
+  ProfilesType,
+  ProfilesTypeInput,
+  UserType,
+  UserTypeInput,
+} from "./types";
 
 export const createUser = {
   type: UserType,
   args: {
-    firstName: { type: GraphQLString },
-    lastName: { type: GraphQLString },
-    email: { type: GraphQLString },
+    input: { type: new GraphQLNonNull(UserTypeInput) },
   },
-  resolve: async (
-    _source: any,
-    args: CreateUserDTO,
-    context: FastifyInstance
-  ) => {
-    return await context.db.users.create(args);
+
+  resolve: async (_source: any, args: any, context: FastifyInstance) => {
+    return await context.db.users.create(args.input);
   },
 };
 
@@ -49,21 +49,14 @@ export const createPost = {
 export const createProfiles = {
   type: ProfilesType,
   args: {
-    avatar: { type: GraphQLString },
-    sex: { type: GraphQLString },
-    birthday: { type: GraphQLInt },
-    country: { type: GraphQLString },
-    street: { type: GraphQLString },
-    city: { type: GraphQLString },
-    memberTypeId: { type: GraphQLString },
-    userId: { type: GraphQLID },
+    input: { type: new GraphQLNonNull(ProfilesTypeInput) },
   },
   resolve: async (
     _source: any,
-    args: CreateProfileDTO,
+    args: { input: CreateProfileDTO },
     context: FastifyInstance
   ) => {
-    const userId = args.userId;
+    const userId = args.input.userId;
     const user = await context.db.users.findOne({
       key: "id",
       equals: userId,
@@ -85,13 +78,13 @@ export const createProfiles = {
 
     const memberTypeId = await context.db.memberTypes.findOne({
       key: "id",
-      equals: args.memberTypeId,
+      equals: args.input.memberTypeId,
     });
     console.log("memberType", memberTypeId);
 
     if (!memberTypeId) {
       return context.httpErrors.badRequest();
     }
-    return await context.db.profiles.create(args);
+    return await context.db.profiles.create(args.input);
   },
 };
