@@ -9,7 +9,7 @@ export type UserEntity = {
   subscribedToUserIds: string[];
 };
 export type CreateUserDTO = Omit<UserEntity, "id" | "subscribedToUserIds">;
-type ChangeUserDTO = Partial<Omit<UserEntity, "id">>;
+export type ChangeUserDTO = Partial<Omit<UserEntity, "id">>;
 
 export default class DBUsers extends DBEntity<
   UserEntity,

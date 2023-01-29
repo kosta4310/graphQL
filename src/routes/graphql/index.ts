@@ -9,7 +9,17 @@ import {
   profiles,
   memberTypes,
 } from "./data/query";
-import { createUser, createProfiles, createPost } from "./data/mutation";
+import {
+  createUser,
+  createProfiles,
+  createPost,
+  updateUser,
+  updateProfiles,
+  updatePost,
+  updateMemberTypes,
+  subscribeTo,
+  unsubscribeFrom,
+} from "./data/mutation";
 import { graphql, GraphQLObjectType, GraphQLSchema } from "graphql";
 import { graphqlBodySchema } from "./schema";
 
@@ -37,6 +47,12 @@ const Mutation = new GraphQLObjectType({
     createUser,
     createProfiles,
     createPost,
+    updateUser,
+    updateProfiles,
+    updatePost,
+    updateMemberTypes,
+    subscribeTo,
+    unsubscribeFrom,
   }),
 });
 

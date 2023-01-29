@@ -1,7 +1,5 @@
-// import { FastifyInstance } from "fastify";
 import { FastifyInstance } from "fastify";
 import {
-  //   graphql,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLInt,
@@ -9,7 +7,6 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLOutputType,
-  //   GraphQLSchema,
   GraphQLString,
 } from "graphql";
 import { PostEntity } from "../../../utils/DB/entities/DBPosts";
@@ -30,6 +27,15 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
         return await context.db.users.findMany({
           key: "subscribedToUserIds",
           inArray: source.id,
+        });
+      },
+    },
+    subscribedToUser: {
+      type: new GraphQLList(UserType),
+      resolve: async (source: UserEntity, args, context: FastifyInstance) => {
+        return await context.db.users.findMany({
+          key: "id",
+          equalsAnyOf: source.subscribedToUserIds,
         });
       },
     },
@@ -118,6 +124,19 @@ export const ProfilesTypeInput = new GraphQLInputObjectType({
   },
 });
 
+export const ProfilesTypeUpdate = new GraphQLInputObjectType({
+  name: "ProfilesUpdate",
+  fields: {
+    avatar: { type: GraphQLString },
+    sex: { type: GraphQLString },
+    birthday: { type: GraphQLInt },
+    country: { type: GraphQLString },
+    street: { type: GraphQLString },
+    city: { type: GraphQLString },
+    memberTypeId: { type: GraphQLString },
+  },
+});
+
 export const PostType: GraphQLOutputType = new GraphQLObjectType({
   name: "Post",
   fields: () => ({
@@ -146,11 +165,35 @@ export const PostTypeInput = new GraphQLInputObjectType({
   },
 });
 
+export const PostTypeUpdate = new GraphQLInputObjectType({
+  name: "PostUpdate",
+  fields: {
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+  },
+});
+
 export const MemberTypesType = new GraphQLObjectType({
   name: "MemberTypes",
   fields: () => ({
     id: { type: GraphQLString },
     discount: { type: GraphQLInt },
     monthPostsLimit: { type: GraphQLInt },
+  }),
+});
+
+export const MemberTypesTypeUpdate = new GraphQLInputObjectType({
+  name: "MemberTypesUpdate",
+  fields: () => ({
+    discount: { type: GraphQLInt },
+    monthPostsLimit: { type: GraphQLInt },
+  }),
+});
+
+export const SubscribeType = new GraphQLInputObjectType({
+  name: "Subscribe",
+  fields: () => ({
+    id: { type: GraphQLID },
+    userId: { type: GraphQLID },
   }),
 });
