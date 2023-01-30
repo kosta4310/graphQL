@@ -16,7 +16,7 @@ import { UserEntity } from "../../../utils/DB/entities/DBUsers";
 
 export type ResolverContext = {
   fastify: FastifyInstance;
-  dataloaders: Map<string, any>;
+  dataloaders: WeakMap<object, any>;
 };
 
 export const UserType: GraphQLOutputType = new GraphQLObjectType({
@@ -35,7 +35,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
         { fastify, dataloaders }: ResolverContext,
         info
       ) => {
-        let dl: any = dataloaders.get("userSubscribedTo");
+        let dl: any = dataloaders.get(info.fieldNodes);
         // console.log("info.fieldsNodes", info.fieldNodes);
 
         if (!dl) {
@@ -56,7 +56,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
             return sortedInIdsOrder;
           });
 
-          dataloaders.set("userSubscribedTo", dl);
+          dataloaders.set(info.fieldNodes, dl);
         }
 
         return dl.load(source.id);
@@ -87,7 +87,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
         { fastify, dataloaders }: ResolverContext,
         info
       ) => {
-        let dl: any = dataloaders.get("profile");
+        let dl: any = dataloaders.get(info.fieldNodes);
         // console.log("info.fieldsNodes", info.fieldNodes[0].name.value);
         // console.log("dl", dl);
 
@@ -107,7 +107,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
             return sortedInIdsOrder;
           });
 
-          dataloaders.set("profile", dl);
+          dataloaders.set(info.fieldNodes, dl);
         }
 
         return dl.load(source.id);
@@ -125,7 +125,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
         { fastify, dataloaders }: ResolverContext,
         info
       ) => {
-        let dl: any = dataloaders.get("posts");
+        let dl: any = dataloaders.get(info.fieldNodes);
         // console.log("info.fieldsNodes", info.fieldNodes);
 
         if (!dl) {
@@ -142,7 +142,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
             return sortedInIdsOrder;
           });
 
-          dataloaders.set("posts", dl);
+          dataloaders.set(info.fieldNodes, dl);
         }
 
         return dl.load(source.id);
