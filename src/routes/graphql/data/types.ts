@@ -14,6 +14,11 @@ import { PostEntity } from "../../../utils/DB/entities/DBPosts";
 import { ProfileEntity } from "../../../utils/DB/entities/DBProfiles";
 import { UserEntity } from "../../../utils/DB/entities/DBUsers";
 
+export type ResolverContext = {
+  fastify: FastifyInstance;
+  dataloaders: Map<string, any>;
+};
+
 export const UserType: GraphQLOutputType = new GraphQLObjectType({
   name: "User",
   fields: () => ({
@@ -27,12 +32,38 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
       resolve: async (
         source: UserEntity,
         __,
-        { fastify, dataloaders }: any
+        { fastify, dataloaders }: ResolverContext,
+        info
       ) => {
-        return await fastify.db.users.findMany({
-          key: "subscribedToUserIds",
-          inArray: source.id,
-        });
+        let dl: any = dataloaders.get("userSubscribedTo");
+        // console.log("info.fieldsNodes", info.fieldNodes);
+
+        if (!dl) {
+          dl = new DataLoader(async (ids) => {
+            const arrayUsers = await fastify.db.users.findMany({
+              key: "subscribedToUserIds",
+              inArrayAnyOf: ids as Array<string>,
+            });
+            // console.log("arrayUsers", arrayUsers);
+
+            const sortedInIdsOrder = (ids as Array<string>).map((userid) => {
+              return arrayUsers.filter((user) =>
+                user.subscribedToUserIds.includes(userid)
+              );
+            });
+            // console.log("sortedInIdsOrder", sortedInIdsOrder);
+
+            return sortedInIdsOrder;
+          });
+
+          dataloaders.set("userSubscribedTo", dl);
+        }
+
+        return dl.load(source.id);
+        // return await fastify.db.users.findMany({
+        //   key: "subscribedToUserIds",
+        //   inArray: source.id,
+        // });
       },
     },
     subscribedToUser: {
@@ -40,7 +71,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
       resolve: async (
         source: UserEntity,
         __,
-        { fastify, dataloaders }: any
+        { fastify, dataloaders }: ResolverContext
       ) => {
         return await fastify.db.users.findMany({
           key: "id",
@@ -53,12 +84,37 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
       resolve: async (
         source: UserEntity,
         __,
-        { fastify, dataloaders }: any
+        { fastify, dataloaders }: ResolverContext,
+        info
       ) => {
-        return await fastify.db.profiles.findOne({
-          key: "userId",
-          equals: source.id,
-        });
+        let dl: any = dataloaders.get("profile");
+        // console.log("info.fieldsNodes", info.fieldNodes[0].name.value);
+        // console.log("dl", dl);
+
+        if (!dl) {
+          dl = new DataLoader(async (ids) => {
+            const profiles = await fastify.db.profiles.findMany({
+              key: "userId",
+              equalsAnyOf: ids as Array<string>,
+            });
+            // console.log("profiles", profiles);
+
+            const sortedInIdsOrder = ids.map((userid) => {
+              return profiles.find((profile) => profile.userId == userid);
+            });
+            // console.log("sortedInIdsOrder", sortedInIdsOrder);
+
+            return sortedInIdsOrder;
+          });
+
+          dataloaders.set("profile", dl);
+        }
+
+        return dl.load(source.id);
+        // return await fastify.db.profiles.findOne({
+        //   key: "userId",
+        //   equals: source.id,
+        // });
       },
     },
     posts: {
@@ -66,17 +122,14 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
       resolve: async (
         source: UserEntity,
         __,
-        {
-          fastify,
-          dataloaders,
-        }: { fastify: FastifyInstance; dataloaders: WeakMap<object, any> },
+        { fastify, dataloaders }: ResolverContext,
         info
       ) => {
-        let dl: any = dataloaders.get(info.fieldNodes);
+        let dl: any = dataloaders.get("posts");
+        // console.log("info.fieldsNodes", info.fieldNodes);
 
         if (!dl) {
           dl = new DataLoader(async (ids) => {
-
             const posts = await fastify.db.posts.findMany({
               key: "userId",
               equalsAnyOf: ids as Array<string>,
@@ -89,7 +142,7 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
             return sortedInIdsOrder;
           });
 
-          dataloaders.set(info.fieldNodes, dl);
+          dataloaders.set("posts", dl);
         }
 
         return dl.load(source.id);
@@ -123,7 +176,7 @@ export const ProfilesType: GraphQLOutputType = new GraphQLObjectType({
       resolve: async (
         source: ProfileEntity,
         __,
-        { fastify, dataloaders }: any
+        { fastify, dataloaders }: ResolverContext
       ) => {
         return await fastify.db.memberTypes.findOne({
           key: "id",
@@ -137,7 +190,7 @@ export const ProfilesType: GraphQLOutputType = new GraphQLObjectType({
       resolve: async (
         source: ProfileEntity,
         __,
-        { fastify, dataloaders }: any
+        { fastify, dataloaders }: ResolverContext
       ) => {
         return await fastify.db.users.findOne({
           key: "id",
@@ -187,10 +240,7 @@ export const PostType: GraphQLOutputType = new GraphQLObjectType({
       resolve: async (
         source: PostEntity,
         __,
-        {
-          fastify,
-          dataloaders,
-        }: { fastify: FastifyInstance; dataloaders: WeakMap<object, any> }
+        { fastify, dataloaders }: ResolverContext
       ) => {
         return await fastify.db.users.findOne({
           key: "id",
