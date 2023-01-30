@@ -1,4 +1,5 @@
 import { FastifyPluginAsyncJsonSchemaToTs } from "@fastify/type-provider-json-schema-to-ts";
+// import DataLoader from "dataloader";
 import {
   user,
   users,
@@ -81,32 +82,5 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
     }
   );
 };
-
-// const UserType = new GraphQLObjectType({
-//   name: "User",
-//   fields: {
-//     firstName: { type: GraphQLString },
-//     lastName: { type: GraphQLString },
-//     email: { type: GraphQLString },
-//   },
-// });
-
-// const simpleschema = new GraphQLSchema({
-//   query: new GraphQLObjectType({
-//     name: "Query",
-//     fields: {
-//       user: {
-//         type: UserType,
-//         args: {
-//           id: { type: GraphQLID },
-//         },
-//         resolve: (root, args, context, info) => {
-//           const { id } = args; // the `id` argument for this field is declared above
-//           return id;
-//         },
-//       },
-//     },
-//   }),
-// });
 
 export default plugin;
