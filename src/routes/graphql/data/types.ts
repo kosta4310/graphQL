@@ -1,3 +1,4 @@
+import DataLoader = require("dataloader");
 import { FastifyInstance } from "fastify";
 import {
   GraphQLID,
@@ -23,8 +24,12 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
     subscribedToUserIds: { type: new GraphQLList(GraphQLID) },
     userSubscribedTo: {
       type: new GraphQLList(UserType),
-      resolve: async (source: UserEntity, args, context: FastifyInstance) => {
-        return await context.db.users.findMany({
+      resolve: async (
+        source: UserEntity,
+        __,
+        { fastify, dataloaders }: any
+      ) => {
+        return await fastify.db.users.findMany({
           key: "subscribedToUserIds",
           inArray: source.id,
         });
@@ -32,8 +37,12 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
     },
     subscribedToUser: {
       type: new GraphQLList(UserType),
-      resolve: async (source: UserEntity, args, context: FastifyInstance) => {
-        return await context.db.users.findMany({
+      resolve: async (
+        source: UserEntity,
+        __,
+        { fastify, dataloaders }: any
+      ) => {
+        return await fastify.db.users.findMany({
           key: "id",
           equalsAnyOf: source.subscribedToUserIds,
         });
@@ -41,8 +50,12 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
     },
     profile: {
       type: ProfilesType,
-      resolve: async (source: UserEntity, args, context: FastifyInstance) => {
-        return await context.db.profiles.findOne({
+      resolve: async (
+        source: UserEntity,
+        __,
+        { fastify, dataloaders }: any
+      ) => {
+        return await fastify.db.profiles.findOne({
           key: "userId",
           equals: source.id,
         });
@@ -50,11 +63,36 @@ export const UserType: GraphQLOutputType = new GraphQLObjectType({
     },
     posts: {
       type: new GraphQLList(PostType),
-      resolve: async (source: UserEntity, args, context: FastifyInstance) => {
-        return await context.db.posts.findMany({
-          key: "userId",
-          equals: source.id,
-        });
+      resolve: async (
+        source: UserEntity,
+        __,
+        {
+          fastify,
+          dataloaders,
+        }: { fastify: FastifyInstance; dataloaders: WeakMap<object, any> },
+        info
+      ) => {
+        let dl: any = dataloaders.get(info.fieldNodes);
+
+        if (!dl) {
+          dl = new DataLoader(async (ids) => {
+
+            const posts = await fastify.db.posts.findMany({
+              key: "userId",
+              equalsAnyOf: ids as Array<string>,
+            });
+
+            const sortedInIdsOrder = ids.map((userid) => {
+              return posts.filter((post) => post.userId == userid);
+            });
+
+            return sortedInIdsOrder;
+          });
+
+          dataloaders.set(info.fieldNodes, dl);
+        }
+
+        return dl.load(source.id);
       },
     },
   }),
@@ -84,10 +122,10 @@ export const ProfilesType: GraphQLOutputType = new GraphQLObjectType({
       type: MemberTypesType,
       resolve: async (
         source: ProfileEntity,
-        args,
-        context: FastifyInstance
+        __,
+        { fastify, dataloaders }: any
       ) => {
-        return await context.db.memberTypes.findOne({
+        return await fastify.db.memberTypes.findOne({
           key: "id",
           equals: source.memberTypeId,
         });
@@ -98,10 +136,10 @@ export const ProfilesType: GraphQLOutputType = new GraphQLObjectType({
       type: UserType,
       resolve: async (
         source: ProfileEntity,
-        args,
-        context: FastifyInstance
+        __,
+        { fastify, dataloaders }: any
       ) => {
-        return await context.db.users.findOne({
+        return await fastify.db.users.findOne({
           key: "id",
           equals: source.userId,
         });
@@ -146,8 +184,15 @@ export const PostType: GraphQLOutputType = new GraphQLObjectType({
     userId: { type: GraphQLID },
     user: {
       type: UserType,
-      resolve: async (source: PostEntity, args, context: FastifyInstance) => {
-        return await context.db.users.findOne({
+      resolve: async (
+        source: PostEntity,
+        __,
+        {
+          fastify,
+          dataloaders,
+        }: { fastify: FastifyInstance; dataloaders: WeakMap<object, any> }
+      ) => {
+        return await fastify.db.users.findOne({
           key: "id",
           equals: source.userId,
         });

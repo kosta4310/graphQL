@@ -1,5 +1,4 @@
 import { FastifyPluginAsyncJsonSchemaToTs } from "@fastify/type-provider-json-schema-to-ts";
-// import DataLoader from "dataloader";
 import {
   user,
   users,
@@ -23,10 +22,6 @@ import {
 } from "./data/mutation";
 import { graphql, GraphQLObjectType, GraphQLSchema } from "graphql";
 import { graphqlBodySchema } from "./schema";
-
-// curl -X POST \
-// -H "Content-Type: application/json" \
-// -d '{"query": "{ hello }"}' \
 
 const Query = new GraphQLObjectType({
   name: "Query",
@@ -76,7 +71,7 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
       return await graphql({
         schema,
         source: String(request.body.query),
-        contextValue: fastify,
+        contextValue: { fastify, dataloaders: new WeakMap() },
         variableValues: request.body.variables,
       });
     }

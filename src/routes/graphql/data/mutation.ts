@@ -1,4 +1,3 @@
-import { FastifyInstance } from "fastify";
 import { GraphQLID, GraphQLNonNull, GraphQLString } from "graphql";
 import { ChangeMemberTypeDTO } from "../../../utils/DB/entities/DBMemberTypes";
 import { CreatePostDTO } from "../../../utils/DB/entities/DBPosts";
@@ -23,15 +22,14 @@ export const createUser = {
   args: {
     input: { type: new GraphQLNonNull(UserTypeInput) },
   },
-  resolve: async (_source: any, args: any, context: FastifyInstance) => {
-    return await context.db.users.create(args.input);
+  resolve: async (_source: any, args: any, { fastify, dataloaders }: any) => {
+    const rr = await fastify.db.users.create(args.input);
+    console.log("rrr: ", rr);
+    console.log(typeof rr);
+
+    return rr;
   },
 };
-
-// type UpdateUserType = {
-//   userId: String;
-//   input: ChangeUserDTO;
-// }
 
 export const updateUser = {
   type: UserType,
@@ -43,17 +41,17 @@ export const updateUser = {
     _source: any,
     // args: { id: String; input: ChangeUserDTO },
     args: any,
-    context: FastifyInstance
+    { fastify, dataloaders }: any
   ) => {
-    const user = await context.db.users.findOne({
+    const user = await fastify.db.users.findOne({
       key: "id",
       equals: args.id,
     });
 
     if (!user) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
-    return await context.db.users.change(args.id, args.input);
+    return await fastify.db.users.change(args.id, args.input);
   },
 };
 
@@ -67,17 +65,17 @@ export const createPost = {
   resolve: async (
     _source: any,
     args: { input: CreatePostDTO },
-    context: FastifyInstance
+    { fastify, dataloaders }: any
   ) => {
-    const user = await context.db.users.findOne({
+    const user = await fastify.db.users.findOne({
       key: "id",
       equals: args.input.userId,
     });
 
     if (!user) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
-    return await context.db.posts.create(args.input);
+    return await fastify.db.posts.create(args.input);
   },
 };
 
@@ -93,18 +91,18 @@ export const updatePost = {
     _source: any,
     // args: {id: String, input: CreatePostDTO },
     args: any,
-    context: FastifyInstance
+    { fastify, dataloaders }: any
   ) => {
-    const post = await context.db.posts.findOne({
+    const post = await fastify.db.posts.findOne({
       key: "id",
       equals: args.id,
     });
 
     if (!post) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    return await context.db.posts.change(args.id, args.input);
+    return await fastify.db.posts.change(args.id, args.input);
   },
 };
 
@@ -116,38 +114,38 @@ export const createProfiles = {
   resolve: async (
     _source: any,
     args: { input: CreateProfileDTO },
-    context: FastifyInstance
+    { fastify, dataloaders }: any
   ) => {
     const userId = args.input.userId;
-    const user = await context.db.users.findOne({
+    const user = await fastify.db.users.findOne({
       key: "id",
       equals: userId,
     });
     console.log("user", user);
 
     if (!user) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    const profile = await context.db.profiles.findOne({
+    const profile = await fastify.db.profiles.findOne({
       key: "userId",
       equals: userId,
     });
 
     if (profile) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    const memberTypeId = await context.db.memberTypes.findOne({
+    const memberTypeId = await fastify.db.memberTypes.findOne({
       key: "id",
       equals: args.input.memberTypeId,
     });
     console.log("memberType", memberTypeId);
 
     if (!memberTypeId) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
-    return await context.db.profiles.create(args.input);
+    return await fastify.db.profiles.create(args.input);
   },
 };
 
@@ -161,19 +159,19 @@ export const updateProfiles = {
     _source: any,
     // args: { id: String; input: CreateProfileDTO },
     args: any,
-    context: FastifyInstance
+    { fastify, dataloaders }: any
   ) => {
     const profileId = args.id;
-    const profile = await context.db.profiles.findOne({
+    const profile = await fastify.db.profiles.findOne({
       key: "id",
       equals: profileId,
     });
 
     if (!profile) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    return await context.db.profiles.change(args.id, args.input);
+    return await fastify.db.profiles.change(args.id, args.input);
   },
 };
 
@@ -186,19 +184,19 @@ export const updateMemberTypes = {
   resolve: async (
     _source: any,
     args: { id: any; input: ChangeMemberTypeDTO },
-    context: FastifyInstance
+    { fastify, dataloaders }: any
   ) => {
     const memberTypesId = args.id;
-    const res = await context.db.memberTypes.findOne({
+    const res = await fastify.db.memberTypes.findOne({
       key: "id",
       equals: args.id,
     });
 
     if (!res) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    return await context.db.memberTypes.change(memberTypesId, args.input);
+    return await fastify.db.memberTypes.change(memberTypesId, args.input);
   },
 };
 
@@ -209,24 +207,24 @@ export const subscribeTo = {
   args: {
     input: { type: new GraphQLNonNull(SubscribeType) },
   },
-  resolve: async (_source: any, args: any, context: FastifyInstance) => {
+  resolve: async (_source: any, args: any, { fastify, dataloaders }: any) => {
     const u1Id: string = args.input.id;
     const u2Id: string = args.input.userId;
 
-    const u1 = await context.db.users.findOne({ key: "id", equals: u1Id });
+    const u1 = await fastify.db.users.findOne({ key: "id", equals: u1Id });
     if (!u1) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    const u2 = await context.db.users.findOne({ key: "id", equals: u2Id });
+    const u2 = await fastify.db.users.findOne({ key: "id", equals: u2Id });
     if (!u2) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
     let arr = u2.subscribedToUserIds;
     arr.push(u1Id);
 
-    return await context.db.users.change(u2Id, {
+    return await fastify.db.users.change(u2Id, {
       subscribedToUserIds: arr,
     });
   },
@@ -237,30 +235,30 @@ export const unsubscribeFrom = {
   args: {
     input: { type: new GraphQLNonNull(SubscribeType) },
   },
-  resolve: async (_source: any, args: any, context: FastifyInstance) => {
+  resolve: async (_source: any, args: any, { fastify, dataloaders }: any) => {
     const u1Id: string = args.input.id;
     const u2Id: string = args.input.userId;
 
-    const u1 = await context.db.users.findOne({ key: "id", equals: u1Id });
+    const u1 = await fastify.db.users.findOne({ key: "id", equals: u1Id });
     if (!u1) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    const u2 = await context.db.users.findOne({ key: "id", equals: u2Id });
+    const u2 = await fastify.db.users.findOne({ key: "id", equals: u2Id });
     if (!u2) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    let arr = u2.subscribedToUserIds;
+    let arr: Array<string> = u2.subscribedToUserIds;
     const lengthBefore = arr.length;
     const resArray = arr.filter((id) => id !== u1Id);
     const lengthAfter = resArray.length;
 
     if (lengthAfter === lengthBefore) {
-      return context.httpErrors.badRequest();
+      return fastify.httpErrors.badRequest();
     }
 
-    return await context.db.users.change(u2Id, {
+    return await fastify.db.users.change(u2Id, {
       subscribedToUserIds: resArray,
     });
   },
