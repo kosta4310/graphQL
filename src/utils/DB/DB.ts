@@ -13,7 +13,7 @@ export default class DB {
   constructor() {
     const deepCopyResultTrap: ProxyHandler<any> = {
       get: (target, prop) => {
-        console.log("DB", prop /* ,target */);
+        console.log("DB", prop, target);
         if (typeof target[prop] === "function") {
           return (...args: any[]) => {
             const result = target[prop](...args);
